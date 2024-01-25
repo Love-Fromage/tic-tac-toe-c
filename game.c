@@ -18,6 +18,60 @@ void flushConsole(){
         printf("\033[2J\033[H");
 }
 
+/*
+int board[25] = {
+    :,:,:,:,:,
+    :,O,-,X,:,
+    :,X,-,-,:,
+    :,-,-,-,:,
+    :,:,:,:,:,
+}
+*/
+
+
+const int CERCLE = 1;
+const int X = 2;
+const int BORDER =3;
+const int EMPTY = 0;
+
+
+const int ConvertTo25[9]={
+    6,7,8,
+    11,12,13,
+    16,17,18
+};
+
+void InitialiseBoard(int *board){
+    int index = 0;
+   for(index = 0; index<25; index++) {
+        board[index] = BORDER;
+   }
+   for(index = 0; index < 9; index++){
+        board[ConvertTo25[index]] = EMPTY;
+   }
+    
+}
+
+void PrintBoard(const int *board){
+    int index = 0;
+    printf("\nBoard\n");
+    for(index = 0; index < 25; index++){
+        if(index!=0 && index%5==0){
+            printf("\n");
+        }
+        printf("%4d", board[index]);
+    }
+    printf("\n");
+}
+
+void Start(){
+    int board[25];
+    InitialiseBoard(&board[0]);
+    board[ConvertTo25[0]] = X;
+    PrintBoard(&board[0]);
+}
+
+
 void demande() {
     printf("1. Play\n");
     printf("2. How to play\n");
@@ -31,7 +85,8 @@ void demande() {
 
     switch (choice) {
     case 1:
-        printf("You chose to play!\n");
+        printf("You chose to play!\n\n\n");
+        Start(); 
         break;
     case 2:
         // printf("\033[2J\033[H");
