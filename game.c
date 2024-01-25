@@ -38,12 +38,45 @@ int board[25] = {
 enum { CERCLE, X, BORDER, EMPTY };
 enum { HUMANWIN, COMPWIN, DRAW };
 
+const int Directions[4] = { 1, 5, 4, 6};
+
 
 const int ConvertTo25[9]={
     6,7,8,
     11,12,13,
     16,17,18
 };
+
+
+int GetNumForDir(int startSq, const int dir, const int *board, const int us){
+    int found = 0;
+    while(board[startSq] != BORDER){
+        if(board[startSq] != us){
+            break;
+        }
+        found++;
+        startSq += dir;
+    }
+    return found;
+}
+
+
+int FindThreeInARow(const int *board, const int ourindex, const int us){
+    int DirIndex = 0;
+    int Dir = 0;
+    int threeCount = 1;
+
+    for(DirIndex = 0; DirIndex < 4; ++DirIndex){
+        Dir = Directions[DirIndex];
+        threeCount += GetNumForDir(ourindex + Dir, Dir, board, us);
+        threeCount += GetNumForDir(ourindex + Dir * -1, Dir * -1, board, us);
+        if(threeCount == 3){
+            break;
+        }
+        threeCount =1;
+    }
+    return threeCount;
+}
 
 void InitialiseBoard(int *board){
     int index = 0;
@@ -76,11 +109,23 @@ int getComputerMove(const int *board){
     int randMove = 0;
 
     /* 2,4,8
-        availableMoves[0] = 2
-        availableMoves[1] = 4
-        availableMoves[2] = 8
+        availableMoves[0] = 2 numFree++ -> 1;
+        availableMoves[numFree] = 4 numFree++ -> 2; 
+        availableMoves[numFree] = 8 numFree++ -> 3
+
+        rand() % numFree gives 0 to 2
+        rand from 0 to 2, return availableMoves[rand]
     
     */
+
+   for(index = 0; index < 9; index++){
+    if(board[ConvertTo25[index]] == EMPTY){
+        availableMoves[numFree++] = ConvertTo25[index];
+    };
+   }
+
+   randMove = (rand() % numFree);
+   return availableMoves[randMove];
 }
 
 int GetHumanMove(const int *board){
@@ -150,18 +195,37 @@ void Start(){
 
     while(!GameOver){
         if(Side == CERCLE){
-            GetHumanMove(&board[0]);
+            LastMoveMade = GetHumanMove(&board[0]);
+            MakeMove(&board[0], LastMoveMade, CERCLE);
+            Side = X;
             // get move from human, make move on board, change side
         } else {
             // get move from computer, make move on board, change side
+            LastMoveMade = getComputerMove(&board[0]);
+            MakeMove(&board[0], LastMoveMade, Side);
+            Side = CERCLE;
             PrintBoard(&board[0]);
         }
 
         // if three in a row exists Game is over
+        if(FindThreeInARow(board, LastMoveMade, Side ^ 1) == 3){
+            printf("Game over!\n");
+            GameOver =1;
+            if(Side == CERCLE){
+                printf("Computer Wins\n");
+            } else {
+                printf("Human wins\n");
+            }
+        }
 
         // if no more moves, game is a draw
-        GameOver =1; // Remove ME !!
+        if(!HasEmpty(board)){
+            printf("Game Over!\n");
+            GameOver =1;
+            printf("It's a draw\n");
+        }
     }
+    PrintBoard(&board[0]);
 }
 
 
